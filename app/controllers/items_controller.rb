@@ -1,5 +1,7 @@
 class ItemsController < ApplicationController
 
+  before_filter :authenticate_user!
+  before_filter :owns_item
   def index
     items = Item.all
 
@@ -8,6 +10,7 @@ class ItemsController < ApplicationController
 
   def create
     item = Item.new(item_params)
+    item.user = current_user
     if item.save
       render json: item, status: 201, location: item
     else
@@ -21,8 +24,11 @@ class ItemsController < ApplicationController
     render nothing:true, status: 204
   end
 
-def item_params
-  params.permit(:name, :checked)
-end
+  def item_params
+    params.permit(:name, :checked)
+  end
+
+  def owns_item
+    if !user_signed_in? || current_user != Item.find(params[:id]).user
 
 end
